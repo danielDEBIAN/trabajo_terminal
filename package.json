@@ -1,0 +1,14 @@
+{
+  "name": "trabajo_terminal",
+  "version": "1.0.0",
+  "description": "Trabajo Terminal (ESCOM)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Espinoza",
+  "license": "ISC",
+  "dependencies": {
+    "delaunator": "^5.0.0"
+  }
+}
