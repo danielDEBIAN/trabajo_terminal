@@ -30,7 +30,7 @@ function xyz2XY(x, y, z, DX, DY, th) {
 function nextTh() {
     canvas.width = canvas.width;//contexto.clearRect(0, 0, canvas.width, canvas.height);
     contexto.beginPath();
-    contexto.strokeStyle = "#FF0000";
+    contexto.strokeStyle = "#FFF0CE";
     xyz2XY(0, 0, 0, 550, 550, th);
     contexto.moveTo(X, Y);
     xyz2XY(500, 0, 0, 550, 550, th);
@@ -38,7 +38,7 @@ function nextTh() {
     contexto.stroke();
 
     contexto.beginPath();
-    contexto.strokeStyle = "#00FF00";
+    contexto.strokeStyle = "#FFC436";
     xyz2XY(0, 0, 0, 550, 550, th);
     contexto.moveTo(X, Y);
     xyz2XY(0, 500, 0, 550, 550, th);
@@ -46,7 +46,7 @@ function nextTh() {
     contexto.stroke();
 
     contexto.beginPath();
-    contexto.strokeStyle = "#0000FF";
+    contexto.strokeStyle = "#0174BE";
     xyz2XY(0, 0, 0, 550, 550, th);
     contexto.moveTo(X, Y);
     xyz2XY(0, 0, 500, 550, 550, th);
@@ -54,7 +54,7 @@ function nextTh() {
     contexto.stroke();
 
     contexto.beginPath();
-    contexto.strokeStyle = "#00FF00";
+    contexto.strokeStyle = "#FFC436";
     for (x = -200; x <= 200; x += 15) {
         y = -200;
         z = 100 * Math.sin(x * x + y * y) / (x * x + y * y);

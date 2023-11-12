@@ -1,101 +1,98 @@
-import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
-import { trimesh } from './trimesh';
+import * as THREE from 'https://threejs.org/build/three.module.js';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
 // FORMATION OF THE MESH
-let R = [[0, 0, 0]];
+const R = [];
 const numGrados = 20;
 
 for (let r = 0.1; r <= 1; r += 0.1) {
-    const intervalo = Array.from({ length: numGrados + 1 }, (_, i) => (2 * Math.PI * i) / numGrados);
-    const x = intervalo.map(theta => r * Math.cos(theta));
-    const y = intervalo.map(theta => r * Math.sin(theta));
-    const z = new Array(numGrados + 1).fill(0);
-
+    const intervalo = new Array(numGrados).fill(0).map((_, i) => i * (2 * Math.PI) / numGrados);
+    const x = intervalo.map(angle => r * Math.cos(angle));
+    const y = intervalo.map(angle => r * Math.sin(angle));
+    const z = new Array(numGrados).fill(0);
     R.push(...x.map((_, i) => [x[i], y[i], z[i]]));
 }
 
-// Triangulation
-const tri = delaunay(R.map(point => [point[0], point[1]]));
-const numVertices = R.length;
-trimesh (tri, R.map(point => [point[0], point[1]]));
+const geometry = new THREE.BufferGeometry();
+const vertices = new Float32Array(R.flat());
+geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+const material = new THREE.MeshBasicMaterial({ color: 0xFFC436, side: THREE.DoubleSide });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
-// Initialization
-const p = [];
-for (let k = 0; k < numVertices; k++) {
-const [rX, rY, rZ] = R[k];
-const vec = [];
-const deq = [];
-
-const trianglesWithK = tri.filter(triangle => triangle.includes(k));
-const neighbors = [...new Set(trianglesWithK.flat())].filter(neighbor => neighbor !== k);
-
-for (const j of neighbors) {
-    const [neighborX, neighborY, neighborZ] = R[j];
-    vec.push(j);
-    deq.push(Math.sqrt((rX - neighborX) ** 2 + (rY - neighborY) ** 2 + (rZ - neighborZ) ** 2) * 0.9);
-}
-
-p.push({
-    r: [rX, rY, rZ],
-    v: [0, 0, 0],
-    f: [0, 0, 0],
-    vec: vec,
-    deq: deq,
+// INITIALIZE
+const N = R.length;
+const p = Array.from({ length: N }, (_, k) => {
+    const [x, y, z] = R[k];
+    return {
+        r: new THREE.Vector3(x, y, z),
+        v: new THREE.Vector3(0, 0, 0),
+        f: new THREE.Vector3(0, 0, 0),
+        vec: [],
+        deq: [],
+    };
 });
+
+for (let k = 0; k < N; k++) {
+    const [fil, col] = p[k].vec.reduce(([fil, col], vecj) => {
+        const ele = Array.from(new Set([...p[k].vec, k].map(v => p[v].vec).flat()));
+        const vec = ele.filter(j => j > k);
+        return [fil.concat(Array(ele.length).fill(k)), col.concat(Array(vec.length).fill(vec))];
+    }, [[], []]);
+
+    const indices = [];
+    for (let i = 0; i < R.length; i++) {
+        if (i !== k) {
+            indices.push(i);
+        }
+    }
+
+    p[k].vec = indices;
+    p[k].deq = indices.map(j => p[k].r.distanceTo(p[j].r) * 0.9);
 }
 
 for (let k = 0; k < numGrados + 1; k++) {
-    p[k].r[2] = 1;
+    p[k].r.z = 1;
 }
 
 const DT = 0.001;
-const K = 100; // spring constant
-const K2 = 1; // damping constant
+const K = 100;
+const K2 = 1;
 
 // SIMULATION
-const y = new Array(1000);
-for (let i = 0; i < 1000; i++) {
-for (let k = 0; k < numVertices - numGrados - 1; k++) {
-    const numVec = p[k].vec.length;
+function animate() {
+    requestAnimationFrame(animate);
 
-    for (let j = 0; j < numVec; j++) {
-        const indVec = p[k].vec[j];
-        const DR = p[indVec].r.map((coord, idx) => coord - p[k].r[idx]);
-        const modulo = Math.sqrt(DR.reduce((acc, val) => acc + val ** 2, 0));
-        const U = DR.map(coord => coord / modulo);
-        const F = U.map((coord, idx) => K * (modulo - p[k].deq[j]) * coord);
+    for (let k = 0; k < N - numGrados - 1; k++) {
+        for (let j = 0; j < p[k].vec.length; j++) {
+            const indVec = p[k].vec[j];
+            const DR = new THREE.Vector3().subVectors(p[indVec].r, p[k].r);
+            const modulo = DR.length();
+            const U = DR.clone().normalize();
+            const F = U.multiplyScalar(K * (modulo - p[k].deq[j]));
+            p[k].f.add(F);
+            p[indVec].f.sub(F);
+        }
 
-        p[k].f = p[k].f.map((coord, idx) => coord + F[idx]);
-        p[indVec].f = p[indVec].f.map((coord, idx) => coord - F[idx]);
+        p[k].v.add(p[k].f.clone().sub(p[k].v.clone().multiplyScalar(K2)).multiplyScalar(DT));
+        p[k].r.add(p[k].v.clone().multiplyScalar(DT));
     }
 
-    p[k].v = p[k].v.map((coord, idx) => coord - (K2 * p[k].v[idx] + p[k].f[idx]) * DT);
-    p[k].r = p[k].r.map((coord, idx) => coord + p[k].v[idx] * DT);
+    for (let k = 0; k < N; k++) {
+        R[k] = [p[k].r.x, p[k].r.y, p[k].r.z];
+        p[k].f.set(0, 0, 0);
+    }
+
+    mesh.geometry.attributes.position.array = new Float32Array(R.flat());
+    mesh.geometry.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
 }
 
-y[i] = p[0].r[2];
-
-for (let k = 0; k < numVertices; k++) {
-    R[k] = p[k].r;
-    p[k].f = [0, 0, 0];
-}
-
-// Visualization (you may need to replace this with appropriate code for your environment)
-console.log(R); // Display coordinates for each step
-}
-
-console.log(y); // Output the resulting array `y` to the console
-
-function delaunay(points) {
-const flatPoints = points.reduce((arr, point) => arr.concat(point), []);
-const delaunayTriangulation = Delaunator.from(flatPoints);
-const triangles = delaunayTriangulation.triangles;
-
-const result = [];
-for (let i = 0; i < triangles.length; i += 3) {
-    const triangle = [triangles[i], triangles[i + 1], triangles[i + 2]];
-    result.push(triangle);
-}
-
-return result;
-}
+camera.position.z = 10;
+animate();

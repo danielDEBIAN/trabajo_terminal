@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+body {
+    font-family: 'Lato', sans-serif;
+    color: #22092C;
+    background-color: #FAF0E6;
+    position: relative;
+}
+
+.canvas {
+    margin: auto;
+    width: auto;
+    padding-top: 1px;
+    height: 1000px;
+    background-color: #22092C;
+    border: 2px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 10;
+    justify-content: center;
+}
+
+h1 {
+    color: #FAF0E6;
+}
+
+nav {
+	margin: 27px auto 0;
+	position: relative;
+	width: 590px;
+	height: 50px;
+	background-color: #22092C;
+	border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+	font-size: 0;
+}
+nav a {
+	line-height: 50px;
+	height: 100%;
+	font-size: 15px;
+    font-weight: bold;
+	display: inline-block;
+	position: relative;
+	z-index: 1;
+	text-decoration: none;
+	text-transform: uppercase;
+	text-align: center;
+	color: #FAF0E6;
+	cursor: pointer;
+}
+nav .animation {
+	position: absolute;
+	height: 100%;
+	top: 0;
+	z-index: 0;
+	transition: all .5s ease 0s;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+a:nth-child(1) {
+	width: 100px;
+}
+a:nth-child(2) {
+	width: 110px;
+}
+a:nth-child(3) {
+	width: 100px;
+}
+a:nth-child(4) {
+	width: 160px;
+}
+a:nth-child(5) {
+	width: 120px;
+}
+nav .start-home, a:nth-child(1):hover~.animation {
+	width: 100px;
+	left: 0;
+	background-color:   #b02d54;
+}
+nav .start-about, a:nth-child(2):hover~.animation {
+	width: 110px;
+	left: 100px;
+	background-color: #b02d54;
+}
