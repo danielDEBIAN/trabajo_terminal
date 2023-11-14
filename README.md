@@ -28,6 +28,7 @@ Se propone desarrollar los algoritmos que permitan la simulación física de cue
 
 Para poder correr el programa se utiliza la extension de Visual Studio Code de LiveServer, al igual que NodeJs para el manejo de paquetes y posteriormente adicion de un framework que nos permita manipular, modelar y hacer una página más robusta.
 Para realizar la instalacion se usa:
+
 `npm install`
 
 Los paquetes utilizados dentro del proyecto se importan de _JSDeliver_ la cual es una CDN (Content Delivery Network) con la finalidad de importar los paquetes necesarios para los navegadores y que las librerias utilizadas las puedan compilar estos.
